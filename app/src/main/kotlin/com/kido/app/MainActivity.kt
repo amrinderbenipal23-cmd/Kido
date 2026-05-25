@@ -1,0 +1,20 @@
+package com.kido.app
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.kido.app.navigation.KidoNavHost
+import com.kido.app.ui.theme.KidoTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            KidoTheme {
+                KidoNavHost()
+            }
+        }
+    }
+}

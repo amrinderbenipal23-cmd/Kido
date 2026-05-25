@@ -32,3 +32,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Claude Code per-user state (shared .claude/settings.json + commands/ may be committed if desired)
+.claude/settings.local.json
+.claude/worktrees/
