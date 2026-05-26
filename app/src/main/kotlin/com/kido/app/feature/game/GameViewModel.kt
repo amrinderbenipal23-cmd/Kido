@@ -90,19 +90,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         if (letter.id == current.currentLetter.id) {
             _state.value = current.copy(phase = GamePhase.Correct)
-            app.narration.speak(
-                app.getString(R.string.narration_correct, letter.glyph, letter.word),
-                utteranceId = "good-${letter.id}",
-            )
             viewModelScope.launch {
                 app.profile.awardStar(letter.id)
-                delay(1_800)
+                app.narration.speakAndWait(
+                    app.getString(R.string.narration_correct, letter.glyph, letter.word),
+                    utteranceId = "good-${letter.id}",
+                )
                 val newStars = current.starsThisSession + 1
                 if (current.round < current.totalRounds) {
                     nextRound(current.round + 1, newStars)
                 } else {
                     _state.value = current.copy(phase = GamePhase.Complete, starsThisSession = newStars)
-                    app.narration.speak(
+                    app.narration.speakAndWait(
                         app.getString(R.string.narration_complete, newStars),
                         utteranceId = "complete",
                     )
@@ -110,12 +109,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
         } else {
             _state.value = current.copy(phase = GamePhase.Incorrect)
-            app.narration.speak(
-                app.getString(R.string.narration_retry),
-                utteranceId = "retry-${letter.id}",
-            )
             viewModelScope.launch {
-                delay(1_200)
+                app.narration.speakAndWait(
+                    app.getString(R.string.narration_retry),
+                    utteranceId = "retry-${letter.id}",
+                )
                 if (_state.value?.phase == GamePhase.Incorrect) {
                     _state.value = _state.value?.copy(phase = GamePhase.Asking)
                 }
