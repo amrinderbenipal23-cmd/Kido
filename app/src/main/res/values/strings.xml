@@ -45,6 +45,13 @@
     <string name="parent_settings_reset">Reset progress</string>
     <string name="parent_settings_loading">Loading…</string>
 
+    <!-- Reset progress dialog -->
+    <string name="reset_dialog_title">Reset progress?</string>
+    <string name="reset_dialog_body">This will erase all of %1$s\'s stars and completed letters. This cannot be undone.</string>
+    <string name="reset_dialog_fallback_name">your child</string>
+    <string name="reset_dialog_confirm">Reset</string>
+    <string name="reset_dialog_cancel">Cancel</string>
+
     <!-- Game errors -->
     <string name="game_error_content_unavailable">Oops! Content couldn\'t load. Please go back and try again.</string>
 

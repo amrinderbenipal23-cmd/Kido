@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +50,32 @@ fun ParentSettingsScreen(
 
     var nameDraft by remember { mutableStateOf(profile.name) }
     LaunchedEffect(profile.name) { nameDraft = profile.name }
+
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text(stringResource(R.string.reset_dialog_title)) },
+            text = {
+                val childName = profile.name.ifBlank { stringResource(R.string.reset_dialog_fallback_name) }
+                Text(stringResource(R.string.reset_dialog_body, childName))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.resetProgress()
+                    showResetDialog = false
+                }) {
+                    Text(stringResource(R.string.reset_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text(stringResource(R.string.reset_dialog_cancel))
+                }
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -116,7 +144,7 @@ fun ParentSettingsScreen(
             )
             BigButton(
                 label = stringResource(R.string.parent_settings_reset),
-                onClick = { viewModel.resetProgress() },
+                onClick = { showResetDialog = true },
                 color = KidoColors.Cherry,
             )
         }
