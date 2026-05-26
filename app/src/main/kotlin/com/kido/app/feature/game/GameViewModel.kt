@@ -39,6 +39,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val errorState: StateFlow<GameError?> = _errorState.asStateFlow()
 
     private var alphabet: AlphabetPack? = null
+    private var sessionPool: MutableList<Letter> = mutableListOf()
     private val totalRounds = 5
     private var started = false
 
@@ -50,6 +51,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             when (val result = app.content.loadAlphabet(profile.languageCode)) {
                 is ContentResult.Ok -> {
                     alphabet = result.value
+                    sessionPool = result.value.letters.shuffled().toMutableList()
                     app.narration.setLocale(result.value.localeTag)
                     nextRound(roundNum = 1, starsSoFar = 0)
                 }
@@ -62,7 +64,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun nextRound(roundNum: Int, starsSoFar: Int) {
         val pack = alphabet ?: return
-        val letter = pack.letters.random()
+        if (sessionPool.isEmpty()) sessionPool = pack.letters.shuffled().toMutableList()
+        val letter = sessionPool.removeFirst()
         val distractors = pack.letters.filter { it.id != letter.id }.shuffled().take(3)
         val choices = (distractors + letter).shuffled()
         _state.value = GameState(
