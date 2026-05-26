@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.kido.app.KidoApp
 import com.kido.app.R
 import com.kido.app.core.content.AlphabetPack
+import com.kido.app.core.content.ContentResult
 import com.kido.app.core.content.Letter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,12 +26,17 @@ data class GameState(
 
 enum class GamePhase { Asking, Correct, Incorrect, Complete }
 
+enum class GameError { ContentUnavailable }
+
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as KidoApp
 
     private val _state = MutableStateFlow<GameState?>(null)
     val state: StateFlow<GameState?> = _state.asStateFlow()
+
+    private val _errorState = MutableStateFlow<GameError?>(null)
+    val errorState: StateFlow<GameError?> = _errorState.asStateFlow()
 
     private var alphabet: AlphabetPack? = null
     private val totalRounds = 5
@@ -41,10 +47,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         started = true
         viewModelScope.launch {
             val profile = app.profile.profile.first()
-            val pack = app.content.loadAlphabet(profile.languageCode)
-            alphabet = pack
-            app.narration.setLocale(pack.localeTag)
-            nextRound(roundNum = 1, starsSoFar = 0)
+            when (val result = app.content.loadAlphabet(profile.languageCode)) {
+                is ContentResult.Ok -> {
+                    alphabet = result.value
+                    app.narration.setLocale(result.value.localeTag)
+                    nextRound(roundNum = 1, starsSoFar = 0)
+                }
+                is ContentResult.NotFound, is ContentResult.ParseError -> {
+                    _errorState.value = GameError.ContentUnavailable
+                }
+            }
         }
     }
 

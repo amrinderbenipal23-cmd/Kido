@@ -3,8 +3,10 @@ package com.kido.app.feature.game
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kido.app.R
@@ -46,6 +49,7 @@ fun GameScreen(
     viewModel: GameViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val errorState by viewModel.errorState.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.start() }
 
@@ -64,6 +68,33 @@ fun GameScreen(
             )
         },
     ) { padding ->
+        if (errorState != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Mascot(modifier = Modifier.size(120.dp), mood = MascotMood.Thinking)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.game_error_content_unavailable),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(24.dp))
+                    BigButton(
+                        label = stringResource(R.string.game_cd_back_home),
+                        onClick = onExit,
+                        color = KidoColors.DeepPurple,
+                    )
+                }
+            }
+            return@Scaffold
+        }
+
         val s = state
         if (s == null) {
             Box(

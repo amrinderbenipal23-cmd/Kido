@@ -45,6 +45,9 @@
     <string name="parent_settings_reset">Reset progress</string>
     <string name="parent_settings_loading">Loading…</string>
 
+    <!-- Game errors -->
+    <string name="game_error_content_unavailable">Oops! Content couldn\'t load. Please go back and try again.</string>
+
     <!-- Navigation -->
     <string name="cd_navigate_back">Back</string>
 </resources>

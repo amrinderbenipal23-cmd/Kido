@@ -7,37 +7,48 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.Locale
 
-/**
- * V0 narration backed by Android TextToSpeech. Real recorded audio will
- * replace this once native-speaker recordings are bundled in
- * `assets/audio/{languageCode}/`. Swap point: [speak].
- */
 class NarrationService(context: Context) {
 
     private val _ready = MutableStateFlow(false)
     val ready: StateFlow<Boolean> = _ready.asStateFlow()
 
-    private val tts: TextToSpeech = TextToSpeech(context.applicationContext) { status ->
-        _ready.value = status == TextToSpeech.SUCCESS
+    private val _engineMissing = MutableStateFlow(false)
+    val engineMissing: StateFlow<Boolean> = _engineMissing.asStateFlow()
+
+    private val tts: TextToSpeech? = try {
+        TextToSpeech(context.applicationContext) { status ->
+            _ready.value = status == TextToSpeech.SUCCESS
+            if (status != TextToSpeech.SUCCESS) _engineMissing.value = true
+        }
+    } catch (e: Exception) {
+        _engineMissing.value = true
+        null
     }
 
-    fun setLocale(localeTag: String) {
-        if (!_ready.value) return
+    fun setLocale(localeTag: String): LocaleResult {
+        val engine = tts ?: return LocaleResult.NoEngine
+        if (!_ready.value) return LocaleResult.NotReady
         val locale = Locale.forLanguageTag(localeTag)
-        tts.language = locale
+        return when (engine.setLanguage(locale)) {
+            TextToSpeech.LANG_MISSING_DATA -> LocaleResult.MissingData
+            TextToSpeech.LANG_NOT_SUPPORTED -> LocaleResult.NotSupported
+            else -> LocaleResult.Ok
+        }
     }
 
     fun speak(text: String, utteranceId: String = text) {
-        if (!_ready.value) return
+        if (tts == null || !_ready.value) return
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
     }
 
     fun stop() {
-        tts.stop()
+        tts?.stop()
     }
 
     fun shutdown() {
-        tts.stop()
-        tts.shutdown()
+        tts?.stop()
+        tts?.shutdown()
     }
+
+    enum class LocaleResult { Ok, NotReady, MissingData, NotSupported, NoEngine }
 }

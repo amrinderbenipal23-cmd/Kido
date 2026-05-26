@@ -3,7 +3,15 @@ package com.kido.app.core.content
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import java.io.FileNotFoundException
+
+sealed interface ContentResult<out T> {
+    data class Ok<T>(val value: T) : ContentResult<T>
+    data class NotFound(val path: String) : ContentResult<Nothing>
+    data class ParseError(val cause: Throwable) : ContentResult<Nothing>
+}
 
 class ContentRepository(private val context: Context) {
 
@@ -12,10 +20,15 @@ class ContentRepository(private val context: Context) {
         isLenient = true
     }
 
-    suspend fun loadAlphabet(languageCode: String): AlphabetPack = withContext(Dispatchers.IO) {
+    suspend fun loadAlphabet(languageCode: String): ContentResult<AlphabetPack> = withContext(Dispatchers.IO) {
         val path = "content/alphabets/$languageCode.json"
-        context.assets.open(path).bufferedReader().use { reader ->
-            json.decodeFromString(AlphabetPack.serializer(), reader.readText())
+        try {
+            val text = context.assets.open(path).bufferedReader().use { it.readText() }
+            ContentResult.Ok(json.decodeFromString(AlphabetPack.serializer(), text))
+        } catch (e: FileNotFoundException) {
+            ContentResult.NotFound(path)
+        } catch (e: SerializationException) {
+            ContentResult.ParseError(e)
         }
     }
 
