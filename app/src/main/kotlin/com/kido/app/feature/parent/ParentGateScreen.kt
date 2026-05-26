@@ -22,10 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kido.app.R
 import com.kido.app.ui.components.BigButton
 import com.kido.app.ui.theme.KidoColors
 
@@ -42,10 +44,13 @@ fun ParentGateScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Grown-up only") },
+                title = { Text(stringResource(R.string.parent_gate_title)) },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back),
+                        )
                     }
                 },
             )
@@ -60,12 +65,12 @@ fun ParentGateScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "For grown-ups",
+                text = stringResource(R.string.parent_gate_heading),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "What is ${viewModel.a} × ${viewModel.b}?",
+                text = stringResource(R.string.parent_gate_question, viewModel.a, viewModel.b),
                 style = MaterialTheme.typography.displaySmall,
             )
             OutlinedTextField(
@@ -77,12 +82,12 @@ fun ParentGateScreen(
                 singleLine = true,
                 isError = showError,
                 supportingText = if (showError) {
-                    { Text("Not quite — try again.") }
+                    { Text(stringResource(R.string.parent_gate_error)) }
                 } else null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
             BigButton(
-                label = "Continue",
+                label = stringResource(R.string.parent_gate_action_continue),
                 color = KidoColors.DeepPurple,
                 onClick = {
                     if (viewModel.verify(answer)) onPassed() else {

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kido.app.KidoApp
+import com.kido.app.R
 import com.kido.app.core.content.AlphabetPack
 import com.kido.app.core.content.Letter
 import kotlinx.coroutines.delay
@@ -67,7 +68,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun speakPrompt(letter: Letter) {
-        app.narration.speak("Tap the letter ${letter.name}", utteranceId = "prompt-${letter.id}")
+        val text = app.getString(R.string.narration_prompt, letter.name)
+        app.narration.speak(text, utteranceId = "prompt-${letter.id}")
     }
 
     fun onChoice(letter: Letter) {
@@ -76,7 +78,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         if (letter.id == current.currentLetter.id) {
             _state.value = current.copy(phase = GamePhase.Correct)
-            app.narration.speak("Great job! ${letter.glyph} for ${letter.word}!", utteranceId = "good-${letter.id}")
+            app.narration.speak(
+                app.getString(R.string.narration_correct, letter.glyph, letter.word),
+                utteranceId = "good-${letter.id}",
+            )
             viewModelScope.launch {
                 app.profile.awardStar(letter.id)
                 delay(1_800)
@@ -85,12 +90,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     nextRound(current.round + 1, newStars)
                 } else {
                     _state.value = current.copy(phase = GamePhase.Complete, starsThisSession = newStars)
-                    app.narration.speak("Amazing work! You earned $newStars stars!", utteranceId = "complete")
+                    app.narration.speak(
+                        app.getString(R.string.narration_complete, newStars),
+                        utteranceId = "complete",
+                    )
                 }
             }
         } else {
             _state.value = current.copy(phase = GamePhase.Incorrect)
-            app.narration.speak("Try again!", utteranceId = "retry-${letter.id}")
+            app.narration.speak(
+                app.getString(R.string.narration_retry),
+                utteranceId = "retry-${letter.id}",
+            )
             viewModelScope.launch {
                 delay(1_200)
                 if (_state.value?.phase == GamePhase.Incorrect) {

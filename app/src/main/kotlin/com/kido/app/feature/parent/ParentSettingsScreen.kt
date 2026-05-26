@@ -29,9 +29,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kido.app.R
 import com.kido.app.ui.components.BigButton
 import com.kido.app.ui.theme.KidoColors
 
@@ -50,10 +52,13 @@ fun ParentSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Parent settings") },
+                title = { Text(stringResource(R.string.parent_settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back),
+                        )
                     }
                 },
             )
@@ -67,7 +72,7 @@ fun ParentSettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            SectionTitle("Child's name")
+            SectionTitle(stringResource(R.string.parent_settings_name_section))
             OutlinedTextField(
                 value = nameDraft,
                 onValueChange = { nameDraft = it.take(20) },
@@ -75,7 +80,7 @@ fun ParentSettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             BigButton(
-                label = "Save name",
+                label = stringResource(R.string.parent_settings_name_save),
                 onClick = { viewModel.setName(nameDraft) },
                 color = KidoColors.DeepPurple,
                 enabled = nameDraft.isNotBlank() && nameDraft != profile.name,
@@ -83,9 +88,9 @@ fun ParentSettingsScreen(
 
             HorizontalDivider()
 
-            SectionTitle("Alphabet language")
+            SectionTitle(stringResource(R.string.parent_settings_lang_section))
             Text(
-                text = "Current: ${profile.languageCode}",
+                text = stringResource(R.string.parent_settings_lang_current, profile.languageCode),
                 style = MaterialTheme.typography.bodyLarge,
             )
             LanguageChips(
@@ -94,19 +99,23 @@ fun ParentSettingsScreen(
                 onSelect = viewModel::setLanguage,
             )
             Text(
-                text = "More languages arrive as content packs are added to assets/content/alphabets/.",
+                text = stringResource(R.string.parent_settings_lang_hint),
                 style = MaterialTheme.typography.bodySmall,
             )
 
             HorizontalDivider()
 
-            SectionTitle("Progress")
+            SectionTitle(stringResource(R.string.parent_settings_progress_section))
             Text(
-                text = "Stars earned: ${profile.stars}\nLetters completed: ${profile.lettersCompleted.size}",
+                text = stringResource(
+                    R.string.parent_settings_progress_body,
+                    profile.stars,
+                    profile.lettersCompleted.size,
+                ),
                 style = MaterialTheme.typography.bodyLarge,
             )
             BigButton(
-                label = "Reset progress",
+                label = stringResource(R.string.parent_settings_reset),
                 onClick = { viewModel.resetProgress() },
                 color = KidoColors.Cherry,
             )
@@ -131,7 +140,7 @@ private fun LanguageChips(
     onSelect: (String) -> Unit,
 ) {
     if (available.isEmpty()) {
-        Text("Loading…", style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.parent_settings_loading), style = MaterialTheme.typography.bodyMedium)
         return
     }
     FlowRow(

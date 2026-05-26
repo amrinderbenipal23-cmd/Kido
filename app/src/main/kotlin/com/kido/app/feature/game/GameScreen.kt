@@ -27,9 +27,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kido.app.R
 import com.kido.app.ui.components.BigButton
 import com.kido.app.ui.components.LetterTile
 import com.kido.app.ui.components.Mascot
@@ -50,10 +52,13 @@ fun GameScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Alphabets") },
+                title = { Text(stringResource(R.string.game_title)) },
                 navigationIcon = {
                     IconButton(onClick = onExit) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back home")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.game_cd_back_home),
+                        )
                     }
                 },
             )
@@ -79,7 +84,7 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Round ${s.round} of ${s.totalRounds}",
+                text = stringResource(R.string.game_round_indicator, s.round, s.totalRounds),
                 style = MaterialTheme.typography.titleLarge,
             )
 
@@ -96,10 +101,14 @@ fun GameScreen(
 
             Text(
                 text = when (s.phase) {
-                    GamePhase.Asking -> "Tap the letter you hear"
-                    GamePhase.Correct -> "Great! ${s.currentLetter.glyph} for ${s.currentLetter.word}"
-                    GamePhase.Incorrect -> "Try again!"
-                    GamePhase.Complete -> "All done! Amazing work!"
+                    GamePhase.Asking -> stringResource(R.string.game_prompt_listen)
+                    GamePhase.Correct -> stringResource(
+                        R.string.game_feedback_correct,
+                        s.currentLetter.glyph,
+                        s.currentLetter.word,
+                    )
+                    GamePhase.Incorrect -> stringResource(R.string.game_feedback_incorrect)
+                    GamePhase.Complete -> stringResource(R.string.game_feedback_complete)
                 },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
@@ -109,7 +118,7 @@ fun GameScreen(
                 IconButton(onClick = { viewModel.repeatPrompt() }) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Hear it again",
+                        contentDescription = stringResource(R.string.game_cd_hear_again),
                         modifier = Modifier.size(48.dp),
                     )
                 }
@@ -138,7 +147,7 @@ fun GameScreen(
                     total = s.totalRounds,
                 )
                 BigButton(
-                    label = "Done!",
+                    label = stringResource(R.string.game_action_done),
                     onClick = onExit,
                     color = KidoColors.Grass,
                 )

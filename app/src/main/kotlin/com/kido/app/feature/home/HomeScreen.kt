@@ -19,9 +19,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kido.app.R
 import com.kido.app.ui.components.BigButton
 import com.kido.app.ui.components.Mascot
 import com.kido.app.ui.components.MascotMood
@@ -39,10 +41,13 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Kido") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     IconButton(onClick = onParentGate) {
-                        Icon(Icons.Default.Settings, contentDescription = "Parent settings")
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.home_cd_parent_settings),
+                        )
                     }
                 },
             )
@@ -61,16 +66,20 @@ fun HomeScreen(
                 mood = MascotMood.Happy,
             )
             Text(
-                text = if (profile.name.isBlank()) "Hi, friend!" else "Hi, ${profile.name}!",
+                text = if (profile.name.isBlank()) {
+                    stringResource(R.string.home_greeting_default)
+                } else {
+                    stringResource(R.string.home_greeting_named, profile.name)
+                },
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "You have ${profile.stars} ⭐",
+                text = stringResource(R.string.home_stars_count, profile.stars),
                 style = MaterialTheme.typography.headlineSmall,
             )
             BigButton(
-                label = "Play Alphabets",
+                label = stringResource(R.string.home_action_play_alphabets),
                 onClick = onPlay,
                 color = KidoColors.Berry,
             )

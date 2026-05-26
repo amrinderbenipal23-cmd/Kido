@@ -1,4 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Kido</string>
+
+    <!-- Home -->
+    <string name="home_greeting_default">Hi, friend!</string>
+    <string name="home_greeting_named">Hi, %1$s!</string>
+    <string name="home_stars_count">You have %1$d ⭐</string>
+    <string name="home_action_play_alphabets">Play Alphabets</string>
+    <string name="home_cd_parent_settings">Parent settings</string>
+
+    <!-- Game -->
+    <string name="game_title">Alphabets</string>
+    <string name="game_prompt_listen">Tap the letter you hear</string>
+    <string name="game_feedback_correct">Great! %1$s for %2$s</string>
+    <string name="game_feedback_incorrect">Try again!</string>
+    <string name="game_feedback_complete">All done! Amazing work!</string>
+    <string name="game_round_indicator">Round %1$d of %2$d</string>
+    <string name="game_cd_back_home">Back home</string>
+    <string name="game_cd_hear_again">Hear it again</string>
+    <string name="game_action_done">Done!</string>
+
+    <!-- Narration (TTS) -->
+    <string name="narration_prompt">Tap the letter %1$s</string>
+    <string name="narration_correct">Great job! %1$s for %2$s!</string>
+    <string name="narration_retry">Try again!</string>
+    <string name="narration_complete">Amazing work! You earned %1$d stars!</string>
+
+    <!-- Parent Gate -->
+    <string name="parent_gate_title">Grown-up only</string>
+    <string name="parent_gate_heading">For grown-ups</string>
+    <string name="parent_gate_question">What is %1$d × %2$d?</string>
+    <string name="parent_gate_error">Not quite — try again.</string>
+    <string name="parent_gate_action_continue">Continue</string>
+
+    <!-- Parent Settings -->
+    <string name="parent_settings_title">Parent settings</string>
+    <string name="parent_settings_name_section">Child\'s name</string>
+    <string name="parent_settings_name_save">Save name</string>
+    <string name="parent_settings_lang_section">Alphabet language</string>
+    <string name="parent_settings_lang_current">Current: %1$s</string>
+    <string name="parent_settings_lang_hint">More languages arrive as content packs are added.</string>
+    <string name="parent_settings_progress_section">Progress</string>
+    <string name="parent_settings_progress_body">Stars earned: %1$d\nLetters completed: %2$d</string>
+    <string name="parent_settings_reset">Reset progress</string>
+    <string name="parent_settings_loading">Loading…</string>
+
+    <!-- Navigation -->
+    <string name="cd_navigate_back">Back</string>
 </resources>
