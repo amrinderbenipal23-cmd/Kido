@@ -1,0 +1,91 @@
+<resources>
+    <string name="app_name">Kiddo Learn</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_abc">ABC Learn</string>
+    <string name="nav_numbers">Numbers</string>
+    <string name="nav_animals">Animals</string>
+    <string name="nav_drawing">Drawing</string>
+    <string name="nav_games">Games</string>
+    <string name="nav_rewards">Rewards</string>
+    <string name="nav_parent">Parent</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hello, %1$s!</string>
+    <string name="home_subtitle">What do you want to learn today?</string>
+    <string name="home_stars">Stars</string>
+    <string name="home_coins">Coins</string>
+
+    <!-- ABC Module -->
+    <string name="abc_title">ABC Learning</string>
+    <string name="abc_tap_to_hear">Tap to hear!</string>
+    <string name="abc_auto_play">Auto Play</string>
+    <string name="abc_prev">Previous</string>
+    <string name="abc_next">Next</string>
+    <string name="abc_completed">You learned all 26 alphabets!</string>
+
+    <!-- Numbers Module -->
+    <string name="numbers_title">Number Learning</string>
+    <string name="numbers_count">Count!</string>
+    <string name="numbers_counting">Counting…</string>
+    <string name="numbers_completed">You counted to 20!</string>
+
+    <!-- Animals Module -->
+    <string name="animals_title">Animal Learning</string>
+    <string name="animals_quiz">Quiz!</string>
+    <string name="animals_browse">Browse</string>
+    <string name="animals_quiz_question">Who says…</string>
+    <string name="animals_correct">Correct! Great job!</string>
+    <string name="animals_wrong">Try again!</string>
+
+    <!-- Drawing Module -->
+    <string name="drawing_title">Drawing</string>
+    <string name="drawing_undo">Undo</string>
+    <string name="drawing_clear">Clear</string>
+    <string name="drawing_save">Save</string>
+    <string name="drawing_saved">Drawing saved!</string>
+
+    <!-- Games -->
+    <string name="games_title">Games</string>
+    <string name="memory_game_title">Memory Cards</string>
+    <string name="balloon_game_title">Balloon Pop</string>
+    <string name="game_score">Score</string>
+    <string name="game_moves">Moves</string>
+    <string name="game_new">New Game</string>
+
+    <!-- Rewards -->
+    <string name="rewards_title">Rewards</string>
+    <string name="daily_reward">Daily Reward!</string>
+    <string name="daily_claim">Claim your reward!</string>
+    <string name="daily_claimed">Come back tomorrow!</string>
+
+    <!-- Parent Dashboard -->
+    <string name="parent_title">Parent Dashboard</string>
+    <string name="parent_lock_question">Solve to continue:</string>
+    <string name="parent_unlock">Unlock</string>
+    <string name="parent_lock">Lock</string>
+    <string name="parent_progress">Learning Progress</string>
+    <string name="parent_screen_time">Screen Time</string>
+    <string name="parent_settings">Settings</string>
+    <string name="parent_wrong_answer">Wrong answer! Try a new question.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_sound">Sound Effects</string>
+    <string name="settings_music">Background Music</string>
+    <string name="settings_voice">Voice Interaction</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_child_name">Child\'s Name</string>
+
+    <!-- Praise messages -->
+    <string name="praise_great">Great job!</string>
+    <string name="praise_amazing">Amazing!</string>
+    <string name="praise_excellent">Excellent!</string>
+    <string name="praise_superstar">You are a superstar!</string>
+
+    <!-- Errors -->
+    <string name="error_tts_unavailable">Voice not available on this device.</string>
+    <string name="error_mic_unavailable">Microphone not available.</string>
+</resources>

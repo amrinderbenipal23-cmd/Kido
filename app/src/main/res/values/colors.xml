@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary palette -->
+    <color name="kiddo_purple">#845EC2</color>
+    <color name="kiddo_orange">#FF6B35</color>
+    <color name="kiddo_red">#FF4757</color>
+    <color name="kiddo_pink">#FF6B9D</color>
+    <color name="kiddo_cyan">#4ECDC4</color>
+    <color name="kiddo_green">#06D6A0</color>
+    <color name="kiddo_yellow">#FFD60A</color>
+    <color name="kiddo_blue">#0077B6</color>
+
+    <!-- Module cards -->
+    <color name="abc_card">#FF6B6B</color>
+    <color name="number_card">#4ECDC4</color>
+    <color name="animal_card">#FFBE0B</color>
+    <color name="drawing_card">#FF6B9D</color>
+    <color name="games_card">#845EC2</color>
+    <color name="rewards_card">#FF9671</color>
+
+    <!-- Backgrounds -->
+    <color name="bg_start">#667EEA</color>
+    <color name="bg_end">#764BA2</color>
+    <color name="surface">#FFFBFE</color>
+
+    <!-- Text -->
+    <color name="text_dark">#1A1A2E</color>
+    <color name="text_medium">#444466</color>
+
+    <!-- Stars -->
+    <color name="star_gold">#FFD700</color>
+    <color name="coin_gold">#FFBF00</color>
+
+    <!-- Legacy -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

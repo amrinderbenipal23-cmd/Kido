@@ -1,0 +1,87 @@
+<resources>
+    <string name="app_name">किड्डो लर्न</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">होम</string>
+    <string name="nav_abc">अक्षर सीखें</string>
+    <string name="nav_numbers">गिनती</string>
+    <string name="nav_animals">जानवर</string>
+    <string name="nav_drawing">चित्रकारी</string>
+    <string name="nav_games">खेल</string>
+    <string name="nav_rewards">पुरस्कार</string>
+    <string name="nav_parent">माता-पिता</string>
+    <string name="nav_settings">सेटिंग्स</string>
+
+    <!-- Home -->
+    <string name="home_greeting">नमस्ते, %1$s!</string>
+    <string name="home_subtitle">आज क्या सीखना चाहते हो?</string>
+    <string name="home_stars">सितारे</string>
+    <string name="home_coins">सिक्के</string>
+
+    <!-- ABC Module -->
+    <string name="abc_title">अक्षर सीखें</string>
+    <string name="abc_tap_to_hear">सुनने के लिए दबाएं!</string>
+    <string name="abc_auto_play">ऑटो प्ले</string>
+    <string name="abc_prev">पिछला</string>
+    <string name="abc_next">अगला</string>
+    <string name="abc_completed">आपने सभी 26 अक्षर सीख लिए!</string>
+
+    <!-- Numbers Module -->
+    <string name="numbers_title">गिनती सीखें</string>
+    <string name="numbers_count">गिनो!</string>
+    <string name="numbers_counting">गिन रहे हैं…</string>
+    <string name="numbers_completed">आपने 20 तक गिना!</string>
+
+    <!-- Animals Module -->
+    <string name="animals_title">जानवर सीखें</string>
+    <string name="animals_quiz">प्रश्नोत्तरी!</string>
+    <string name="animals_browse">देखें</string>
+    <string name="animals_quiz_question">कौन बोलता है…</string>
+    <string name="animals_correct">सही! शाबाश!</string>
+    <string name="animals_wrong">फिर कोशिश करो!</string>
+
+    <!-- Drawing Module -->
+    <string name="drawing_title">चित्रकारी</string>
+    <string name="drawing_undo">पूर्ववत करें</string>
+    <string name="drawing_clear">साफ करें</string>
+    <string name="drawing_save">सहेजें</string>
+    <string name="drawing_saved">चित्र सहेजा!</string>
+
+    <!-- Games -->
+    <string name="games_title">खेल</string>
+    <string name="memory_game_title">याद रखो</string>
+    <string name="balloon_game_title">गुब्बारा फोड़ो</string>
+    <string name="game_score">अंक</string>
+    <string name="game_moves">चालें</string>
+    <string name="game_new">नया खेल</string>
+
+    <!-- Rewards -->
+    <string name="rewards_title">पुरस्कार</string>
+    <string name="daily_reward">दैनिक पुरस्कार!</string>
+    <string name="daily_claim">अपना पुरस्कार लें!</string>
+    <string name="daily_claimed">कल वापस आएं!</string>
+
+    <!-- Parent Dashboard -->
+    <string name="parent_title">माता-पिता डैशबोर्ड</string>
+    <string name="parent_lock_question">जारी रखने के लिए हल करें:</string>
+    <string name="parent_unlock">खोलें</string>
+    <string name="parent_lock">बंद करें</string>
+    <string name="parent_progress">सीखने की प्रगति</string>
+    <string name="parent_screen_time">स्क्रीन समय</string>
+    <string name="parent_settings">सेटिंग्स</string>
+    <string name="parent_wrong_answer">गलत उत्तर! नया प्रश्न आज़माएं।</string>
+
+    <!-- Settings -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_sound">ध्वनि प्रभाव</string>
+    <string name="settings_music">पृष्ठभूमि संगीत</string>
+    <string name="settings_voice">आवाज़ इंटरैक्शन</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_child_name">बच्चे का नाम</string>
+
+    <!-- Praise messages -->
+    <string name="praise_great">शाबाश!</string>
+    <string name="praise_amazing">अद्भुत!</string>
+    <string name="praise_excellent">उत्कृष्ट!</string>
+    <string name="praise_superstar">आप एक सुपरस्टार हैं!</string>
+</resources>
