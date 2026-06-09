@@ -6,6 +6,7 @@ import com.quickfix.kidszone.data.local.datastore.SettingsDataStore
 import com.quickfix.kidszone.domain.model.GameItem
 import com.quickfix.kidszone.domain.model.GameDifficulty
 import com.quickfix.kidszone.domain.model.GameType
+import com.quickfix.kidszone.utils.KiddoAudioManager
 import com.quickfix.kidszone.utils.KiddoTextToSpeech
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -17,6 +18,7 @@ data class GamesUiState(val games: List<GameItem> = emptyList())
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val tts: KiddoTextToSpeech,
+    private val audio: KiddoAudioManager,
     private val settingsDataStore: SettingsDataStore,
 ) : ViewModel() {
 
@@ -38,9 +40,19 @@ class GameViewModel @Inject constructor(
 
     fun onGameCompleted(stars: Int) {
         viewModelScope.launch {
+            audio.playRewardSound()
             settingsDataStore.addStars(stars)
             settingsDataStore.addCoins(stars * 5)
             tts.speakPraise()
         }
     }
+
+    /** Play a soft click for taps/selections in games. */
+    fun playTap() = audio.playClickSound()
+
+    /** Play the positive match chime. */
+    fun playMatch() = audio.playSuccessSound()
+
+    /** Play the gentle "try again" sound. */
+    fun playMiss() = audio.playWrongSound()
 }

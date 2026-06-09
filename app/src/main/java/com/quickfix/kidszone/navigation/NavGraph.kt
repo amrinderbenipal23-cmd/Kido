@@ -12,6 +12,8 @@ import com.quickfix.kidszone.ui.drawing.DrawingScreen
 import com.quickfix.kidszone.ui.games.BalloonGameScreen
 import com.quickfix.kidszone.ui.games.GamesScreen
 import com.quickfix.kidszone.ui.games.MemoryGameScreen
+import com.quickfix.kidszone.ui.games.QuizGameScreen
+import com.quickfix.kidszone.domain.model.GameType
 import com.quickfix.kidszone.ui.home.HomeScreen
 import com.quickfix.kidszone.ui.numbers.NumberScreen
 import com.quickfix.kidszone.ui.parent.ParentDashboardScreen
@@ -81,6 +83,10 @@ fun KiddoNavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() },
                 onMemoryGame = { navController.navigate(Screen.MemoryGame.route) },
                 onBalloonGame = { navController.navigate(Screen.BalloonGame.route) },
+                onMatchAnimal = { navController.navigate(Screen.MatchAnimalGame.route) },
+                onFindAlphabet = { navController.navigate(Screen.FindAlphabetGame.route) },
+                onCountObjects = { navController.navigate(Screen.CountObjectsGame.route) },
+                onShapeMatch = { navController.navigate(Screen.ShapeMatchGame.route) },
             )
         }
 
@@ -90,6 +96,22 @@ fun KiddoNavGraph(navController: NavHostController) {
 
         composable(Screen.BalloonGame.route) {
             BalloonGameScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.MatchAnimalGame.route) {
+            QuizGameScreen(gameType = GameType.MATCH_ANIMAL, onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.FindAlphabetGame.route) {
+            QuizGameScreen(gameType = GameType.FIND_ALPHABET, onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.CountObjectsGame.route) {
+            QuizGameScreen(gameType = GameType.COUNT_OBJECTS, onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.ShapeMatchGame.route) {
+            QuizGameScreen(gameType = GameType.SHAPE_MATCHING, onBack = { navController.popBackStack() })
         }
 
         composable(Screen.Rewards.route) {

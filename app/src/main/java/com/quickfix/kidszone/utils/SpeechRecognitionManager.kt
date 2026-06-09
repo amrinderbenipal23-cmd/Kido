@@ -6,11 +6,17 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SpeechRecognitionManager(private val context: Context) {
+@Singleton
+class SpeechRecognitionManager @Inject constructor(
+    @ApplicationContext private val context: Context,
+) {
 
     private var recognizer: SpeechRecognizer? = null
 

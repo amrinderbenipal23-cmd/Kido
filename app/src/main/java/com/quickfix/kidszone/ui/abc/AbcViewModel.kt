@@ -6,7 +6,9 @@ import com.quickfix.kidszone.data.local.datastore.SettingsDataStore
 import com.quickfix.kidszone.data.repository.ProgressRepository
 import com.quickfix.kidszone.domain.model.Alphabet
 import com.quickfix.kidszone.domain.usecase.GetAlphabetsUseCase
+import com.quickfix.kidszone.utils.KiddoAudioManager
 import com.quickfix.kidszone.utils.KiddoTextToSpeech
+import com.quickfix.kidszone.utils.SpeechRecognitionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,12 +22,16 @@ data class AbcUiState(
     val isAutoPlaying: Boolean = false,
     val showReward: Boolean = false,
     val completedCount: Int = 0,
+    val isListening: Boolean = false,
+    val voiceFeedback: String? = null,
 )
 
 @HiltViewModel
 class AbcViewModel @Inject constructor(
     private val getAlphabetsUseCase: GetAlphabetsUseCase,
     private val tts: KiddoTextToSpeech,
+    private val audio: KiddoAudioManager,
+    private val speech: SpeechRecognitionManager,
     private val settingsDataStore: SettingsDataStore,
     private val progressRepository: ProgressRepository,
 ) : ViewModel() {
@@ -38,7 +44,74 @@ class AbcViewModel @Inject constructor(
     init {
         val alphabets = getAlphabetsUseCase()
         _uiState.update { it.copy(alphabets = alphabets) }
+        observeSpeech()
     }
+
+    // ── Voice / speaking practice ────────────────────────────────────────────
+
+    private fun observeSpeech() {
+        viewModelScope.launch {
+            speech.state.collect { state ->
+                when (state) {
+                    is SpeechRecognitionManager.SpeechState.Listening ->
+                        _uiState.update { it.copy(isListening = true, voiceFeedback = "Listening… 👂") }
+                    is SpeechRecognitionManager.SpeechState.Result -> {
+                        _uiState.update { it.copy(isListening = false) }
+                        evaluateSpeech(state.text)
+                    }
+                    is SpeechRecognitionManager.SpeechState.Error ->
+                        _uiState.update { it.copy(isListening = false, voiceFeedback = "Didn't catch that — try again! 🎤") }
+                    is SpeechRecognitionManager.SpeechState.Idle ->
+                        _uiState.update { it.copy(isListening = false) }
+                }
+            }
+        }
+    }
+
+    fun startVoice() {
+        viewModelScope.launch {
+            if (!settingsDataStore.voiceEnabled.first()) {
+                _uiState.update { it.copy(voiceFeedback = "Voice is turned off in Settings.") }
+                return@launch
+            }
+            _uiState.update { it.copy(voiceFeedback = null) }
+            speech.startListening()
+        }
+    }
+
+    fun stopVoice() {
+        speech.stopListening()
+        _uiState.update { it.copy(isListening = false) }
+    }
+
+    private fun evaluateSpeech(spokenRaw: String) {
+        val state = _uiState.value
+        val current = state.alphabets.getOrNull(state.currentIndex) ?: return
+        val spoken = spokenRaw.trim().lowercase()
+        val letter = current.capitalLetter.lowercase()
+        val word = current.exampleWordEn.lowercase()
+        val correct = spoken.isNotEmpty() && (
+            spoken == letter ||
+                spoken.contains(word) ||
+                spoken.split(" ", ",").any { it == letter || it == word }
+            )
+        viewModelScope.launch {
+            if (correct) {
+                audio.playSuccessSound()
+                tts.speakPraise()
+                settingsDataStore.addStars(1)
+                _uiState.update { it.copy(voiceFeedback = "🎉 Perfect! You said it right!") }
+            } else {
+                audio.playWrongSound()
+                tts.speakEncouragement()
+                _uiState.update {
+                    it.copy(voiceFeedback = "You said \"$spokenRaw\". Say \"${current.capitalLetter}\" — try again! 💪")
+                }
+            }
+        }
+    }
+
+    fun clearVoiceFeedback() = _uiState.update { it.copy(voiceFeedback = null) }
 
     fun speakCurrentLetter() {
         val state = _uiState.value
@@ -46,9 +119,16 @@ class AbcViewModel @Inject constructor(
         viewModelScope.launch {
             val soundEnabled = settingsDataStore.soundEnabled.first()
             if (!soundEnabled) return@launch
-            tts.speakAlphabet(current.capitalLetter)
-            delay(600)
-            tts.speakWord("${current.capitalLetter} for ${current.exampleWordEn}")
+            val isHindi = settingsDataStore.language.first() == "hi"
+            if (isHindi) {
+                tts.speakHindi(current.hindiLetter)
+                delay(600)
+                tts.speakHindi(current.exampleWordHi)
+            } else {
+                tts.speakAlphabet(current.capitalLetter)
+                delay(600)
+                tts.speakWord("${current.capitalLetter} for ${current.exampleWordEn}")
+            }
         }
     }
 
@@ -129,5 +209,6 @@ class AbcViewModel @Inject constructor(
         super.onCleared()
         autoPlayJob?.cancel()
         tts.stop()
+        speech.stopListening()
     }
 }

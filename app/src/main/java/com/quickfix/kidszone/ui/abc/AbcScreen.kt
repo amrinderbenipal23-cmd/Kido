@@ -1,5 +1,9 @@
 package com.quickfix.kidszone.ui.abc
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -15,11 +19,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickfix.kidszone.domain.model.Alphabet
@@ -33,11 +39,28 @@ fun AbcScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentAlphabet = uiState.alphabets.getOrNull(uiState.currentIndex)
+    val context = LocalContext.current
+
+    val micLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) viewModel.startVoice() }
+
+    fun onVoiceToggle() {
+        if (uiState.isListening) {
+            viewModel.stopVoice()
+        } else {
+            val granted = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.RECORD_AUDIO,
+            ) == PackageManager.PERMISSION_GRANTED
+            if (granted) viewModel.startVoice() else micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
 
     LaunchedEffect(uiState.currentIndex) {
         if (uiState.currentIndex == 0 && !uiState.isAutoPlaying) {
             viewModel.speakCurrentLetter()
         }
+        viewModel.clearVoiceFeedback()
     }
 
     Box(
@@ -84,6 +107,15 @@ fun AbcScreen(
                 canGoPrevious = uiState.currentIndex > 0,
                 canGoNext = uiState.currentIndex < uiState.alphabets.size - 1,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            )
+
+            // Voice / speaking practice
+            VoicePracticeRow(
+                isListening = uiState.isListening,
+                feedback = uiState.voiceFeedback,
+                prompt = currentAlphabet?.let { "Tap the mic and say \"${it.capitalLetter}\"!" } ?: "",
+                onToggle = ::onVoiceToggle,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
             )
 
             // Alphabet strip at bottom

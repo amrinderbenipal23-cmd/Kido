@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +36,12 @@ class HomeViewModel @Inject constructor(
     val allProgress: StateFlow<List<Progress>> = progressRepository.getAllProgress()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    val currentStreak: StateFlow<Int> = settingsDataStore.currentStreak
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    val language: StateFlow<String> = settingsDataStore.language
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "en")
+
     private var tapCount = 0
 
     /** Returns true on every 2nd tap — caller should show an interstitial. */
@@ -42,5 +52,16 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch { rewardsRepository.initDefaultRewards() }
+        updateStreak()
+    }
+
+    private fun updateStreak() {
+        viewModelScope.launch {
+            val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val today = fmt.format(Date())
+            val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
+            val yesterday = fmt.format(cal.time)
+            settingsDataStore.updateStreakOnAppOpen(today, yesterday)
+        }
     }
 }

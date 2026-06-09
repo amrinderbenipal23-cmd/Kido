@@ -24,11 +24,14 @@ class SettingsDataStore @Inject constructor(
         val TOTAL_STARS = intPreferencesKey("total_stars")
         val TOTAL_COINS = intPreferencesKey("total_coins")
         val SCREEN_TIME_MINUTES = longPreferencesKey("screen_time_minutes")
+        val SCREEN_TIME_SECONDS = longPreferencesKey("screen_time_seconds")
         val ADS_ENABLED = booleanPreferencesKey("ads_enabled")
         val CHILD_NAME = stringPreferencesKey("child_name")
         val DAILY_REWARD_CLAIMED_DATE = stringPreferencesKey("daily_reward_date")
         val SELECTED_THEME = stringPreferencesKey("selected_theme")
         val VOICE_ENABLED = booleanPreferencesKey("voice_enabled")
+        val CURRENT_STREAK = intPreferencesKey("current_streak")
+        val LAST_ACTIVE_DATE = stringPreferencesKey("last_active_date")
     }
 
     val soundEnabled: Flow<Boolean> = context.dataStore.data
@@ -51,9 +54,15 @@ class SettingsDataStore @Inject constructor(
         .catch { emit(emptyPreferences()) }
         .map { it[TOTAL_COINS] ?: 0 }
 
+    // Screen time is accumulated in seconds (so short sessions still count) and
+    // surfaced to the UI as whole minutes.
     val screenTimeMinutes: Flow<Long> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
-        .map { it[SCREEN_TIME_MINUTES] ?: 0L }
+        .map { (it[SCREEN_TIME_SECONDS] ?: 0L) / 60L }
+
+    val currentStreak: Flow<Int> = context.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { it[CURRENT_STREAK] ?: 0 }
 
     val adsEnabled: Flow<Boolean> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
@@ -95,6 +104,38 @@ class SettingsDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[SCREEN_TIME_MINUTES] = (prefs[SCREEN_TIME_MINUTES] ?: 0L) + minutes
         }
+    }
+
+    /** Accumulate elapsed active time, in seconds. */
+    suspend fun addScreenTimeSeconds(seconds: Long) {
+        if (seconds <= 0L) return
+        context.dataStore.edit { prefs ->
+            prefs[SCREEN_TIME_SECONDS] = (prefs[SCREEN_TIME_SECONDS] ?: 0L) + seconds
+        }
+    }
+
+    /**
+     * Update the daily learning streak. Call once when the app comes to the
+     * foreground. Returns the new streak value.
+     *
+     * - Same day as last open → unchanged.
+     * - Exactly the next day → streak + 1.
+     * - Any longer gap (or first ever open) → streak resets to 1.
+     */
+    suspend fun updateStreakOnAppOpen(today: String, yesterday: String): Int {
+        var newStreak = 1
+        context.dataStore.edit { prefs ->
+            val last = prefs[LAST_ACTIVE_DATE]
+            val current = prefs[CURRENT_STREAK] ?: 0
+            newStreak = when (last) {
+                today -> current.coerceAtLeast(1)
+                yesterday -> current + 1
+                else -> 1
+            }
+            prefs[CURRENT_STREAK] = newStreak
+            prefs[LAST_ACTIVE_DATE] = today
+        }
+        return newStreak
     }
 
     suspend fun setAdsEnabled(enabled: Boolean) {

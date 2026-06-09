@@ -64,10 +64,12 @@ fun BalloonGameScreen(
                 showReward = true
                 viewModel.onGameCompleted(3)
             } else {
+                viewModel.playMatch()
                 resetRound()
             }
         } else {
             message = "💨 Wrong balloon! Try again!"
+            viewModel.playMiss()
         }
     }
 

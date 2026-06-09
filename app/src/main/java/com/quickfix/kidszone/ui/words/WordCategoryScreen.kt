@@ -1,5 +1,9 @@
 package com.quickfix.kidszone.ui.words
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -20,16 +24,19 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickfix.kidszone.data.models.WordCategory
 import com.quickfix.kidszone.data.models.WordItem
 import com.quickfix.kidszone.ui.components.AnimatedButton
 import com.quickfix.kidszone.ui.components.RewardDialog
+import com.quickfix.kidszone.ui.components.VoicePracticeRow
 import com.quickfix.kidszone.ui.theme.TextDark
 
 @Composable
@@ -40,6 +47,22 @@ fun WordCategoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val category = runCatching { WordCategory.valueOf(categoryName) }.getOrNull()
+    val context = LocalContext.current
+
+    val micLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) viewModel.startVoice() }
+
+    fun onVoiceToggle() {
+        if (uiState.isListening) {
+            viewModel.stopVoice()
+        } else {
+            val granted = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.RECORD_AUDIO,
+            ) == PackageManager.PERMISSION_GRANTED
+            if (granted) viewModel.startVoice() else micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
 
     LaunchedEffect(categoryName) {
         category?.let { viewModel.selectCategory(it) }
@@ -194,6 +217,16 @@ fun WordCategoryScreen(
                     enabled = uiState.currentWordIndex < words.size - 1,
                 )
             }
+
+            // Voice / speaking practice
+            VoicePracticeRow(
+                isListening = uiState.isListening,
+                feedback = uiState.voiceFeedback,
+                prompt = currentWord?.let { "Tap the mic and say \"${it.wordEn}\"!" } ?: "",
+                onToggle = ::onVoiceToggle,
+                accent = cardColor,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
         }
 
         if (uiState.showReward) {

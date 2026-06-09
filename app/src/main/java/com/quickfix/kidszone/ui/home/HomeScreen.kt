@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickfix.kidszone.utils.AdManager
+import com.quickfix.kidszone.ui.LocalAdsEnabled
 import com.quickfix.kidszone.ui.components.AnimatedMascot
 import com.quickfix.kidszone.ui.components.BannerAdView
 import com.quickfix.kidszone.ui.components.ModuleCard
@@ -55,11 +56,15 @@ fun HomeScreen(
     val childName by viewModel.childName.collectAsStateWithLifecycle()
     val totalStars by viewModel.totalStars.collectAsStateWithLifecycle()
     val totalCoins by viewModel.totalCoins.collectAsStateWithLifecycle()
+    val streak by viewModel.currentStreak.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
+    val adsEnabled = LocalAdsEnabled.current
+    val isHindi = language == "hi"
 
-    // Shows an interstitial on every 2nd tap, then proceeds with navigation.
-    // Falls through immediately if no ad is loaded (user never blocked).
+    // Shows an interstitial on every 2nd tap (only when ads are enabled), then
+    // proceeds with navigation. Falls through immediately otherwise.
     fun navigateWithAd(destination: () -> Unit) {
-        if (viewModel.recordTap()) {
+        if (adsEnabled && viewModel.recordTap()) {
             AdManager.showInterstitial(activity = activity, onDismissed = destination)
         } else {
             destination()
@@ -105,17 +110,17 @@ fun HomeScreen(
             AnimatedMascot(
                 emoji = "🦉",
                 size = 70.dp,
-                message = "Hello, $childName! 👋",
+                message = if (isHindi) "नमस्ते, $childName! 👋" else "Hello, $childName! 👋",
                 isExcited = true,
             )
             Spacer(Modifier.weight(1f))
-            DailyStreakBadge()
+            DailyStreakBadge(streak = streak)
         }
 
         Spacer(Modifier.height(16.dp))
 
         Text(
-            text = "What do you want to learn today?",
+            text = if (isHindi) "आज आप क्या सीखना चाहते हैं?" else "What do you want to learn today?",
             fontWeight = FontWeight.ExtraBold,
             fontSize = 22.sp,
             color = TextDark,
@@ -224,7 +229,7 @@ private fun HomeTopBar(
 }
 
 @Composable
-private fun DailyStreakBadge() {
+private fun DailyStreakBadge(streak: Int) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
@@ -234,7 +239,12 @@ private fun DailyStreakBadge() {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("🔥", fontSize = 22.sp)
-            Text("Streak!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text(
+                text = if (streak > 0) "$streak day${if (streak == 1) "" else "s"}" else "Start!",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp,
+            )
         }
     }
 }

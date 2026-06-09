@@ -42,7 +42,11 @@ class NumberViewModel @Inject constructor(
         val current = _uiState.value.numbers.getOrNull(_uiState.value.currentIndex) ?: return
         viewModelScope.launch {
             if (!settingsDataStore.soundEnabled.first()) return@launch
-            tts.speak("${current.value}. ${current.wordEn}")
+            if (settingsDataStore.language.first() == "hi") {
+                tts.speakHindi("${current.value}. ${current.wordHi}")
+            } else {
+                tts.speak("${current.value}. ${current.wordEn}")
+            }
         }
     }
 

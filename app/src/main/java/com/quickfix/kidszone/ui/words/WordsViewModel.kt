@@ -8,7 +8,9 @@ import com.quickfix.kidszone.data.models.WordCategory
 import com.quickfix.kidszone.data.models.WordItem
 import com.quickfix.kidszone.data.models.WordsData
 import com.quickfix.kidszone.data.repository.ProgressRepository
+import com.quickfix.kidszone.utils.KiddoAudioManager
 import com.quickfix.kidszone.utils.KiddoTextToSpeech
+import com.quickfix.kidszone.utils.SpeechRecognitionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -22,6 +24,9 @@ data class WordsUiState(
     val currentWordIndex: Int = 0,
     val isAutoPlaying: Boolean = false,
     val isHindi: Boolean = false,
+    // Voice
+    val isListening: Boolean = false,
+    val voiceFeedback: String? = null,
     // Sentence making
     val sentences: List<SentenceItem> = WordsData.sentences,
     val currentSentenceIndex: Int = 0,
@@ -38,12 +43,85 @@ enum class SentenceResult { NONE, CORRECT, WRONG }
 @HiltViewModel
 class WordsViewModel @Inject constructor(
     private val tts: KiddoTextToSpeech,
+    private val audio: KiddoAudioManager,
+    private val speech: SpeechRecognitionManager,
     private val settingsDataStore: SettingsDataStore,
     private val progressRepository: ProgressRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WordsUiState())
     val uiState: StateFlow<WordsUiState> = _uiState.asStateFlow()
+
+    init {
+        observeSpeech()
+        // Default the in-screen language to the app-wide setting.
+        viewModelScope.launch {
+            if (settingsDataStore.language.first() == "hi") {
+                _uiState.update { it.copy(isHindi = true) }
+            }
+        }
+    }
+
+    // ── Voice / speaking practice ────────────────────────────────────────────
+
+    private fun observeSpeech() {
+        viewModelScope.launch {
+            speech.state.collect { state ->
+                when (state) {
+                    is SpeechRecognitionManager.SpeechState.Listening ->
+                        _uiState.update { it.copy(isListening = true, voiceFeedback = "Listening… 👂") }
+                    is SpeechRecognitionManager.SpeechState.Result -> {
+                        _uiState.update { it.copy(isListening = false) }
+                        evaluateSpeech(state.text)
+                    }
+                    is SpeechRecognitionManager.SpeechState.Error ->
+                        _uiState.update { it.copy(isListening = false, voiceFeedback = "Didn't catch that — try again! 🎤") }
+                    is SpeechRecognitionManager.SpeechState.Idle ->
+                        _uiState.update { it.copy(isListening = false) }
+                }
+            }
+        }
+    }
+
+    fun startVoice() {
+        viewModelScope.launch {
+            if (!settingsDataStore.voiceEnabled.first()) {
+                _uiState.update { it.copy(voiceFeedback = "Voice is turned off in Settings.") }
+                return@launch
+            }
+            _uiState.update { it.copy(voiceFeedback = null) }
+            speech.startListening()
+        }
+    }
+
+    fun stopVoice() {
+        speech.stopListening()
+        _uiState.update { it.copy(isListening = false) }
+    }
+
+    private fun evaluateSpeech(spokenRaw: String) {
+        val state = _uiState.value
+        val current = state.wordsInCategory.getOrNull(state.currentWordIndex) ?: return
+        val spoken = spokenRaw.trim().lowercase()
+        val target = current.wordEn.lowercase()
+        val correct = spoken.isNotEmpty() && (spoken == target || spoken.contains(target))
+        viewModelScope.launch {
+            if (correct) {
+                audio.playSuccessSound()
+                tts.speakPraise()
+                settingsDataStore.addStars(1)
+                _uiState.update { it.copy(voiceFeedback = "🎉 Perfect! You said \"${current.wordEn}\"!") }
+            } else {
+                audio.playWrongSound()
+                tts.speakEncouragement()
+                _uiState.update {
+                    it.copy(voiceFeedback = "You said \"$spokenRaw\". Say \"${current.wordEn}\" — try again! 💪")
+                }
+            }
+        }
+    }
+
+    fun clearVoiceFeedback() = _uiState.update { it.copy(voiceFeedback = null) }
 
     fun selectCategory(category: WordCategory) {
         val words = WordsData.getByCategory(category)
@@ -195,5 +273,6 @@ class WordsViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         tts.stop()
+        speech.stopListening()
     }
 }

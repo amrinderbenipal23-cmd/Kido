@@ -27,6 +27,10 @@ fun GamesScreen(
     onBack: () -> Unit,
     onMemoryGame: () -> Unit,
     onBalloonGame: () -> Unit,
+    onMatchAnimal: () -> Unit,
+    onFindAlphabet: () -> Unit,
+    onCountObjects: () -> Unit,
+    onShapeMatch: () -> Unit,
     viewModel: GameViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -71,7 +75,10 @@ fun GamesScreen(
                             when (game.type) {
                                 GameType.MEMORY_CARDS -> onMemoryGame()
                                 GameType.BALLOON_POP -> onBalloonGame()
-                                else -> onMemoryGame()
+                                GameType.MATCH_ANIMAL -> onMatchAnimal()
+                                GameType.FIND_ALPHABET -> onFindAlphabet()
+                                GameType.COUNT_OBJECTS -> onCountObjects()
+                                GameType.SHAPE_MATCHING -> onShapeMatch()
                             }
                         },
                     )

@@ -68,10 +68,12 @@ fun MemoryGameScreen(
                     if (it.id == first.id || it.id == second.id) it.copy(isMatched = true) else it
                 }
                 score += 10
+                viewModel.playMatch()
             } else {
                 cards = cards.map {
                     if (it.id == first.id || it.id == second.id) it.copy(isFlipped = false) else it
                 }
+                viewModel.playMiss()
             }
             flippedCards = emptyList()
             isProcessing = false
