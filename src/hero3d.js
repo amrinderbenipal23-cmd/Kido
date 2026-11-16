@@ -88,7 +88,7 @@ export function mountHero(canvas, opts = {}) {
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d');
     g.fillStyle = ch === 'N' ? '#f4e7c6' : '#dcb560';
-    g.font = '500 96px "Source Serif 4", Georgia, serif';
+    g.font = '500 84px "IBM Plex Mono", ui-monospace, monospace';
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(ch, 64, 70);
     const tex = new CanvasTexture(c); tex.colorSpace = SRGBColorSpace;
@@ -223,6 +223,8 @@ export function mountHero(canvas, opts = {}) {
 
   return {
     setScroll(p) { scroll = MathUtils.clamp(p, 0, 1); if (reduced) render(0, 0); },
+    // Needle bearing in degrees, clockwise from north (0 to 359)
+    getHeading() { const d = (-needle.rotation.z * 180 / Math.PI) % 360; return Math.round((d + 360) % 360) % 360; },
     destroy() { cancelAnimationFrame(raf); io.disconnect(); renderer.dispose(); },
   };
 }

@@ -106,7 +106,7 @@
   if (cursor && finePointer && !reduced) {
     const dot = cursor.querySelector('.cursor__dot'), ring = cursor.querySelector('.cursor__ring');
     let x = 0, y = 0, rx = 0, ry = 0;
-    window.addEventListener('pointermove', (e) => { x = e.clientX; y = e.clientY; dot.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`; }, { passive: true });
+    window.addEventListener('pointermove', (e) => { document.body.classList.add('cursor-on'); x = e.clientX; y = e.clientY; dot.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`; }, { passive: true });
     (function tick() { rx += (x - rx) * 0.18; ry += (y - ry) * 0.18; ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`; requestAnimationFrame(tick); })();
     document.querySelectorAll('a, button, .card, .tilt').forEach((el) => {
       el.addEventListener('pointerenter', () => document.body.classList.add('is-hovering'));
@@ -163,14 +163,14 @@
       },
     });
 
-    // Headings reveal word by word
+    // Split headings into characters and reveal
     document.querySelectorAll('.h2.split').forEach((h) => {
-      const text = h.textContent.trim();
+      const text = h.textContent;
       h.setAttribute('aria-label', text);
-      h.innerHTML = text.split(' ').map((w) => `<span class="word" aria-hidden="true">${w}</span>`).join(' ');
-      gsap.from(h.querySelectorAll('.word'), {
+      h.innerHTML = text.split(' ').map((w) => `<span class="word" style="display:inline-block;white-space:nowrap">${[...w].map((c) => `<span class="char" aria-hidden="true">${c}</span>`).join('')}</span>`).join(' ');
+      gsap.from(h.querySelectorAll('.char'), {
         scrollTrigger: { trigger: h, start: 'top 85%' },
-        y: 28, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.07,
+        yPercent: 100, opacity: 0, rotateX: -40, transformOrigin: '50% 100%', duration: 0.8, ease: 'power4.out', stagger: 0.015,
       });
     });
 
@@ -192,7 +192,7 @@
     document.querySelectorAll('.reveal-3d').forEach((el, i) => {
       gsap.fromTo(el, { opacity: 0, y: 70, rotateX: 16, transformPerspective: 1000, transformOrigin: '50% 100%' }, {
         opacity: 1, y: 0, rotateX: 0, ease: 'power2.out',
-        scrollTrigger: { trigger: el, start: 'top 96%', end: 'top 62%', scrub: 0.6, onLeave() { el.classList.add('is-revealed'); } },
+        scrollTrigger: { trigger: el, start: 'top 98%', end: 'top 74%', scrub: 0.6, onLeave() { el.classList.add('is-revealed'); } },
       });
     });
 
@@ -219,7 +219,7 @@
         });
         n.parentNode.replaceChild(frag, n);
       });
-      gsap.to(el.querySelectorAll('.w'), { opacity: 1, stagger: 0.04, ease: 'none', scrollTrigger: { trigger: el, start: 'top 88%', end: 'top 45%', scrub: true } });
+      gsap.to(el.querySelectorAll('.w'), { opacity: 1, stagger: 0.04, ease: 'none', scrollTrigger: { trigger: el, start: 'top 92%', end: 'top 58%', scrub: true } });
     });
 
     // Marquee driven by the ticker; it speeds up with scroll velocity
@@ -239,6 +239,7 @@
     // Licence seal and founder card react to scroll
     const seal = document.querySelector('.licence__seal');
     if (seal) gsap.to(seal, { rotate: 180, ease: 'none', scrollTrigger: { trigger: seal, start: 'top bottom', end: 'bottom top', scrub: true } });
+    gsap.utils.toArray('.hero__chips li').forEach((li, i) => gsap.fromTo(li, { y: i % 2 ? 2 : -2 }, { y: i % 2 ? -2 : 2, repeat: -1, yoyo: true, duration: 2.4 + i * 0.35, ease: 'sine.inOut' }));
 
     // Counters
     document.querySelectorAll('[data-count]').forEach((el) => {
@@ -310,6 +311,22 @@
   }
   window.addEventListener('scroll', onProgress, { passive: true }); onProgress();
 
+
+  /* ---------- Hero readout: live bearing from the 3D needle and India time ---------- */
+  const roBearing = document.getElementById('roBearing');
+  const roClock = document.getElementById('roClock');
+  if (roBearing && roClock) {
+    const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const tickClock = () => { roClock.textContent = fmt.format(new Date()); };
+    tickClock(); setInterval(tickClock, 1000);
+    const tickBearing = () => {
+      const h = window.__heroScene && window.__heroScene.getHeading ? window.__heroScene.getHeading() : 0;
+      roBearing.textContent = String(h).padStart(3, '0') + '\u00B0';
+      if (!reduced) requestAnimationFrame(tickBearing);
+    };
+    requestAnimationFrame(tickBearing);
+  }
+
   /* ---------- Directions filter ---------- */
   const chips = document.querySelectorAll('.filters .chip');
   const cards = document.querySelectorAll('#cards .card');
@@ -332,7 +349,7 @@
     { cat: 'Verbal', q: 'Choose the word closest in meaning to VIGILANT.', opts: ['Careless', 'Watchful', 'Hostile', 'Tired'], a: 1, dir: 'Human Resources' },
     { cat: 'Logical', q: 'Which number comes next: 2, 6, 12, 20, 30, ?', opts: ['36', '40', '42', '44'], a: 2, dir: 'Data Science' },
     { cat: 'Numerical', q: 'A field yields 18 quintals per acre. After a new practice the yield is 22.5 quintals. The increase is:', opts: ['20%', '22.5%', '25%', '30%'], a: 2, dir: 'Agriculture' },
-    { cat: 'Verbal', q: 'Pick the odd one out.', opts: ['Ledger', 'Invoice', 'Receipt', 'Drone'], a: 3, dir: 'AI and machine learning' },
+    { cat: 'Verbal', q: 'Pick the odd one out.', opts: ['Ledger', 'Invoice', 'Receipt', 'Drone'], a: 3, dir: 'AI / ML' },
   ];
   const quiz = {
     i: 0, score: 0, hits: {}, timer: null, left: 90,
@@ -376,12 +393,12 @@
       this.els.prog.style.width = '100%';
       this.els.score.textContent = this.score;
       const pct = this.score / QUESTIONS.length;
-      this.els.verdict.textContent = pct >= 0.85 ? 'A strong result. You reasoned accurately under time pressure.'
-        : pct >= 0.6 ? 'A good result. The full assessment would show which areas are strongest.'
-        : pct >= 0.35 ? 'A fair result. The full assessment maps each area in detail and suggests what to practise.'
-        : 'Eight questions say little on their own. The full assessment gives a fairer picture.';
+      this.els.verdict.textContent = pct >= 0.85 ? 'Excellent. Sharp reasoning under time pressure, the kind we look for in supervisors and analysts.'
+        : pct >= 0.6 ? 'Strong. Solid fundamentals with room to specialise; a full assessment will show where.'
+        : pct >= 0.35 ? 'Developing. The full assessment maps your strengths in detail and suggests a learning path.'
+        : 'A starting point. Everyone has a North; our counsellors help you find yours.';
       const best = Object.entries(this.hits).sort((a, b) => b[1] - a[1])[0];
-      this.els.north.textContent = best ? best[0] : 'Aptitude test';
+      this.els.north.textContent = best ? best[0] : 'Aptitude & Career Counselling';
       if (window.ScrollTrigger) ScrollTrigger.refresh();
     },
   };
@@ -401,17 +418,17 @@
         // No form backend configured yet: fall back to a pre-filled email.
         const body = ['Name: ' + data.get('name'), 'Phone: ' + data.get('phone'), 'Email: ' + data.get('email'), 'Organisation: ' + data.get('organisation'), 'Service: ' + data.get('service'), '', data.get('message')].join('\n');
         window.location.href = 'mailto:hello@example.com?subject=' + encodeURIComponent('Quote request: ' + data.get('service')) + '&body=' + encodeURIComponent(body);
-        note.textContent = 'Your email app will open with the request filled in.';
+        note.textContent = 'Opening your email app with the request pre-filled.';
         return;
       }
-      note.textContent = 'Sending.';
+      note.textContent = 'Sending…';
       try {
         const res = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
         const json = await res.json();
-        if (json.success) { note.textContent = 'Request received. We will contact you.'; form.reset(); }
+        if (json.success) { note.textContent = 'Received. We will call you within 24 hours.'; form.reset(); }
         else throw new Error(json.message || 'Failed');
       } catch (err) {
-        note.textContent = 'The request could not be sent. Please call or email us.';
+        note.textContent = 'Could not send right now. Please call or WhatsApp us.';
       }
     });
   }

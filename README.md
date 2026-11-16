@@ -8,8 +8,8 @@ Tagline: *Find your North.*
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | Single-page site: hero, security services, consulting services, founder, licence and compliance, aptitude sample test, clients, contact, footer |
-| `assets/css/styles.css` | Design tokens (navy, off-white, one brass accent), Source Serif 4 / IBM Plex Sans / IBM Plex Mono type, layout, reduced-motion rules |
+| `index.html` | Single-page site: hero with live bearing and IST readout, security services, 13 consulting directions, founder, compliance and licence, aptitude sample test, sectors, contact, footer |
+| `assets/css/styles.css` | Design tokens (navy and gold), Rajdhani headings, IBM Plex Sans text, IBM Plex Mono data, chamfered buttons, HUD corner brackets, scan sweep, reduced-motion rules |
 | `assets/js/main.js` | Lenis smooth scroll, GSAP ScrollTrigger 3D entrances scrubbed by scroll, scroll-velocity skew, word-by-word lead reveals, global particle field with parallax, compass scroll indicator and progress bar, lazy background video, tilt cards, magnetic buttons, custom cursor, filters, counters, quiz, form |
 | `src/hero3d.js` → `assets/js/hero3d.js` | Three.js compass rose + particle field over the hero video (built with esbuild, see below) |
 | `assets/video/*` | Twenty-four looping clips generated with Higgsfield (Seedance 2.5): six section backgrounds, six security-service cards and one animated clip per direction card (image-to-video from the service renders). All crossfade-looped and encoded to WebM/MP4 at desktop and mobile sizes, with poster frames |
@@ -43,14 +43,10 @@ Search `index.html` for square-bracket placeholders and the `example.com` links:
 - `YOUR_WEB3FORMS_ACCESS_KEY` in the quote form (free key from web3forms.com). Until it is set, the form opens a pre-filled email instead
 - Founder photo: drop an image into `.founder__photo`
 - "PRC at home" copy: confirm what PRC stands for in your practice and expand it on first use
-- Service commitments: confirm that the founder reviews each new site and brief, and that each client has one named
-  point of contact (section 3 of the page). Remove either line if it does not match how the agency works
+- Claims to confirm or remove: the founder quote in the Leadership section, the 24x7 control room, the
+  "Founder-led engagements" line, the 24-hour proposal promise, and the Gurugram, Faridabad and Panchkula coverage
+  (security work is limited to the districts on the licence)
 
-## Copy style
-
-All copy follows the service-writing rules in the Joint Services Staff Duties Manual: plain words, short sentences in the
-active voice, sentence-case headings, decimal numbering, italics rather than bold for emphasis, the serial comma, and no
-claim that the agency cannot support. Keep to those rules when editing.
 
 ## Deploy
 
