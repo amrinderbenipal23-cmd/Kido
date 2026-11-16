@@ -1,14 +1,15 @@
-# KIDO Security & Consulting — website
+# True North Security Services: website
 
-Static marketing site for a Haryana (India) PSARA-licensed private security agency that also offers thirteen consulting
-"directions", led by a retired Indian Air Force Squadron Leader. Tagline: **Find Your North.**
+Static website for True North Security Services, a PSARA-licensed private security agency in Haryana, India. A retired
+Indian Air Force Squadron Leader founded the agency, which also advises clients in twelve further fields.
+Tagline: *Find your North.*
 
 ## What is in here
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | Single-page site: hero, security bento, 13 directions, founder, compliance & licence, aptitude sample test, sectors, contact, footer |
-| `assets/css/styles.css` | Design tokens (navy + gold), layout, reduced-motion rules |
+| `index.html` | Single-page site: hero, security services, consulting services, founder, licence and compliance, aptitude sample test, clients, contact, footer |
+| `assets/css/styles.css` | Design tokens (navy, off-white, one brass accent), Source Serif 4 / IBM Plex Sans / IBM Plex Mono type, layout, reduced-motion rules |
 | `assets/js/main.js` | Lenis smooth scroll, GSAP ScrollTrigger 3D entrances scrubbed by scroll, scroll-velocity skew, word-by-word lead reveals, global particle field with parallax, compass scroll indicator and progress bar, lazy background video, tilt cards, magnetic buttons, custom cursor, filters, counters, quiz, form |
 | `src/hero3d.js` → `assets/js/hero3d.js` | Three.js compass rose + particle field over the hero video (built with esbuild, see below) |
 | `assets/video/*` | Twenty-four looping clips generated with Higgsfield (Seedance 2.5): six section backgrounds, six security-service cards and one animated clip per direction card (image-to-video from the service renders). All crossfade-looped and encoded to WebM/MP4 at desktop and mobile sizes, with poster frames |
@@ -35,13 +36,21 @@ npm run build
 
 Search `index.html` for square-bracket placeholders and the `example.com` links:
 
-- Company name (currently **KIDO**) and the `og:`/canonical URLs
-- `Sqn Ldr [Founder Name] (Retd)`, service years and specialisation
+- The `og:` and canonical URLs (currently `example.com`)
+- `Sqn Ldr [Founder Name] (Retd)`, years of service, branch and city
 - PSARA licence number, validity dates, area of operation and registered office (copy them exactly from the licence)
 - Phone, WhatsApp, email and address (in the contact section, footer and JSON-LD)
 - `YOUR_WEB3FORMS_ACCESS_KEY` in the quote form (free key from web3forms.com). Until it is set, the form opens a pre-filled email instead
 - Founder photo: drop an image into `.founder__photo`
-- "PRC at Home" copy: confirm what PRC stands for in your practice and expand it on first use
+- "PRC at home" copy: confirm what PRC stands for in your practice and expand it on first use
+- Service commitments: confirm that the founder reviews each new site and brief, and that each client has one named
+  point of contact (section 3 of the page). Remove either line if it does not match how the agency works
+
+## Copy style
+
+All copy follows the service-writing rules in the Joint Services Staff Duties Manual: plain words, short sentences in the
+active voice, sentence-case headings, decimal numbering, italics rather than bold for emphasis, the serial comma, and no
+claim that the agency cannot support. Keep to those rules when editing.
 
 ## Deploy
 

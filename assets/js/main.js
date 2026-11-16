@@ -1,4 +1,4 @@
-/* KIDO Security & Consulting — site behaviour
+/* True North Security Services: site behaviour
    Depends on gsap, ScrollTrigger and Lenis loaded before this file (deferred). */
 (function () {
   'use strict';
@@ -163,14 +163,14 @@
       },
     });
 
-    // Split headings into characters and reveal
+    // Headings reveal word by word
     document.querySelectorAll('.h2.split').forEach((h) => {
-      const text = h.textContent;
+      const text = h.textContent.trim();
       h.setAttribute('aria-label', text);
-      h.innerHTML = text.split(' ').map((w) => `<span class="word" style="display:inline-block;white-space:nowrap">${[...w].map((c) => `<span class="char" aria-hidden="true">${c}</span>`).join('')}</span>`).join(' ');
-      gsap.from(h.querySelectorAll('.char'), {
+      h.innerHTML = text.split(' ').map((w) => `<span class="word" aria-hidden="true">${w}</span>`).join(' ');
+      gsap.from(h.querySelectorAll('.word'), {
         scrollTrigger: { trigger: h, start: 'top 85%' },
-        yPercent: 100, opacity: 0, rotateX: -40, transformOrigin: '50% 100%', duration: 0.8, ease: 'power4.out', stagger: 0.015,
+        y: 28, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.07,
       });
     });
 
@@ -231,14 +231,14 @@
     }
 
     // Section backgrounds breathe: scale down as the section scrolls through
-    document.querySelectorAll('.section__bg').forEach((bg) => {
-      gsap.fromTo(bg, { scale: 1.12 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: bg.closest('.section'), start: 'top bottom', end: 'bottom top', scrub: true } });
+    // (scale the video inside its clipped wrapper so it never spills into the section above)
+    document.querySelectorAll('.section__bg .bg-video').forEach((v) => {
+      gsap.fromTo(v, { scale: 1.18 }, { scale: 1.02, ease: 'none', scrollTrigger: { trigger: v.closest('.section'), start: 'top bottom', end: 'bottom top', scrub: true } });
     });
 
     // Licence seal and founder card react to scroll
     const seal = document.querySelector('.licence__seal');
     if (seal) gsap.to(seal, { rotate: 180, ease: 'none', scrollTrigger: { trigger: seal, start: 'top bottom', end: 'bottom top', scrub: true } });
-    gsap.utils.toArray('.hero__chips li').forEach((li, i) => gsap.to(li, { y: -8 + (i % 2) * 16, repeat: -1, yoyo: true, duration: 2.6 + i * 0.3, ease: 'sine.inOut' }));
 
     // Counters
     document.querySelectorAll('[data-count]').forEach((el) => {
@@ -332,7 +332,7 @@
     { cat: 'Verbal', q: 'Choose the word closest in meaning to VIGILANT.', opts: ['Careless', 'Watchful', 'Hostile', 'Tired'], a: 1, dir: 'Human Resources' },
     { cat: 'Logical', q: 'Which number comes next: 2, 6, 12, 20, 30, ?', opts: ['36', '40', '42', '44'], a: 2, dir: 'Data Science' },
     { cat: 'Numerical', q: 'A field yields 18 quintals per acre. After a new practice the yield is 22.5 quintals. The increase is:', opts: ['20%', '22.5%', '25%', '30%'], a: 2, dir: 'Agriculture' },
-    { cat: 'Verbal', q: 'Pick the odd one out.', opts: ['Ledger', 'Invoice', 'Receipt', 'Drone'], a: 3, dir: 'AI / ML' },
+    { cat: 'Verbal', q: 'Pick the odd one out.', opts: ['Ledger', 'Invoice', 'Receipt', 'Drone'], a: 3, dir: 'AI and machine learning' },
   ];
   const quiz = {
     i: 0, score: 0, hits: {}, timer: null, left: 90,
@@ -376,12 +376,12 @@
       this.els.prog.style.width = '100%';
       this.els.score.textContent = this.score;
       const pct = this.score / QUESTIONS.length;
-      this.els.verdict.textContent = pct >= 0.85 ? 'Excellent. Sharp reasoning under time pressure, the kind we look for in supervisors and analysts.'
-        : pct >= 0.6 ? 'Strong. Solid fundamentals with room to specialise; a full assessment will show where.'
-        : pct >= 0.35 ? 'Developing. The full assessment maps your strengths in detail and suggests a learning path.'
-        : 'A starting point. Everyone has a North; our counsellors help you find yours.';
+      this.els.verdict.textContent = pct >= 0.85 ? 'A strong result. You reasoned accurately under time pressure.'
+        : pct >= 0.6 ? 'A good result. The full assessment would show which areas are strongest.'
+        : pct >= 0.35 ? 'A fair result. The full assessment maps each area in detail and suggests what to practise.'
+        : 'Eight questions say little on their own. The full assessment gives a fairer picture.';
       const best = Object.entries(this.hits).sort((a, b) => b[1] - a[1])[0];
-      this.els.north.textContent = best ? best[0] : 'Aptitude & Career Counselling';
+      this.els.north.textContent = best ? best[0] : 'Aptitude test';
       if (window.ScrollTrigger) ScrollTrigger.refresh();
     },
   };
@@ -401,17 +401,17 @@
         // No form backend configured yet: fall back to a pre-filled email.
         const body = ['Name: ' + data.get('name'), 'Phone: ' + data.get('phone'), 'Email: ' + data.get('email'), 'Organisation: ' + data.get('organisation'), 'Service: ' + data.get('service'), '', data.get('message')].join('\n');
         window.location.href = 'mailto:hello@example.com?subject=' + encodeURIComponent('Quote request: ' + data.get('service')) + '&body=' + encodeURIComponent(body);
-        note.textContent = 'Opening your email app with the request pre-filled.';
+        note.textContent = 'Your email app will open with the request filled in.';
         return;
       }
-      note.textContent = 'Sending…';
+      note.textContent = 'Sending.';
       try {
         const res = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
         const json = await res.json();
-        if (json.success) { note.textContent = 'Received. We will call you within 24 hours.'; form.reset(); }
+        if (json.success) { note.textContent = 'Request received. We will contact you.'; form.reset(); }
         else throw new Error(json.message || 'Failed');
       } catch (err) {
-        note.textContent = 'Could not send right now. Please call or WhatsApp us.';
+        note.textContent = 'The request could not be sent. Please call or email us.';
       }
     });
   }

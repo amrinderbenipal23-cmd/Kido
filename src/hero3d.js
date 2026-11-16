@@ -10,8 +10,8 @@ import {
 
 export function mountHero(canvas, opts = {}) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const gold = new Color(opts.gold || '#d4a645');
-  const pale = new Color(opts.pale || '#f3e3b3');
+  const gold = new Color(opts.gold || '#c2a15a');
+  const pale = new Color(opts.pale || '#e9e1c8');
 
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
