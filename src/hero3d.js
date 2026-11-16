@@ -6,12 +6,13 @@ import {
   TorusGeometry, MeshBasicMaterial, Mesh, LineBasicMaterial, LineSegments,
   BufferGeometry, Float32BufferAttribute, Points, PointsMaterial,
   ConeGeometry, AdditiveBlending, Vector2, MathUtils, Clock, RingGeometry, DoubleSide,
+  Sprite, SpriteMaterial, CanvasTexture, SRGBColorSpace,
 } from 'three';
 
 export function mountHero(canvas, opts = {}) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const gold = new Color(opts.gold || '#c2a15a');
-  const pale = new Color(opts.pale || '#e9e1c8');
+  const gold = new Color(opts.gold || '#dcb560');
+  const pale = new Color(opts.pale || '#f4e7c6');
 
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
@@ -27,10 +28,10 @@ export function mountHero(canvas, opts = {}) {
   scene.add(rig);
 
   // Outer ring and tilted orbit rings
-  const ringMat = new MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.55 });
+  const ringMat = new MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.8 });
   const outer = new Mesh(new TorusGeometry(2.6, 0.012, 8, 160), ringMat);
   rose.add(outer);
-  const orbitMat = new MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.22 });
+  const orbitMat = new MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.3 });
   const orbit1 = new Mesh(new TorusGeometry(3.1, 0.008, 6, 160), orbitMat);
   orbit1.rotation.x = Math.PI / 2.4;
   const orbit2 = new Mesh(new TorusGeometry(3.4, 0.006, 6, 160), orbitMat);
@@ -47,7 +48,7 @@ export function mountHero(canvas, opts = {}) {
   }
   const tickGeo = new BufferGeometry();
   tickGeo.setAttribute('position', new Float32BufferAttribute(tickPos, 3));
-  rose.add(new LineSegments(tickGeo, new LineBasicMaterial({ color: gold, transparent: true, opacity: 0.6 })));
+  rose.add(new LineSegments(tickGeo, new LineBasicMaterial({ color: gold, transparent: true, opacity: 0.85 })));
 
   // Eight-point star (compass rose) as line art
   const starPos = [];
@@ -64,7 +65,42 @@ export function mountHero(canvas, opts = {}) {
   }
   const starGeo = new BufferGeometry();
   starGeo.setAttribute('position', new Float32BufferAttribute(starPos, 3));
-  rose.add(new LineSegments(starGeo, new LineBasicMaterial({ color: pale, transparent: true, opacity: 0.75 })));
+  rose.add(new LineSegments(starGeo, new LineBasicMaterial({ color: pale, transparent: true, opacity: 0.9 })));
+
+
+  // Outer bezel: fine ticks every 3 degrees, plus a second thin ring
+  const bezelPos = [];
+  for (let i = 0; i < 120; i++) {
+    const a = (i / 120) * Math.PI * 2;
+    const len = i % 10 === 0 ? 0.16 : 0.07;
+    const r0 = 2.92, r1 = r0 - len;
+    bezelPos.push(Math.cos(a) * r0, Math.sin(a) * r0, 0, Math.cos(a) * r1, Math.sin(a) * r1, 0);
+  }
+  const bezelGeo = new BufferGeometry();
+  bezelGeo.setAttribute('position', new Float32BufferAttribute(bezelPos, 3));
+  const bezel = new LineSegments(bezelGeo, new LineBasicMaterial({ color: gold, transparent: true, opacity: 0.55 }));
+  rose.add(bezel);
+  rose.add(new Mesh(new TorusGeometry(2.98, 0.006, 6, 200), new MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.45 })));
+  rose.add(new Mesh(new TorusGeometry(2.02, 0.006, 6, 160), new MeshBasicMaterial({ color: pale, transparent: true, opacity: 0.35 })));
+
+  // Cardinal letters as small serif sprites
+  function letter(ch, size) {
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d');
+    g.fillStyle = ch === 'N' ? '#f4e7c6' : '#dcb560';
+    g.font = '500 96px "Source Serif 4", Georgia, serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(ch, 64, 70);
+    const tex = new CanvasTexture(c); tex.colorSpace = SRGBColorSpace;
+    const sp = new Sprite(new SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+    sp.scale.set(size, size, 1);
+    return sp;
+  }
+  [['N', Math.PI / 2, 0.42], ['E', 0, 0.3], ['S', -Math.PI / 2, 0.3], ['W', Math.PI, 0.3]].forEach(([ch, a, sz]) => {
+    const sp = letter(ch, sz);
+    sp.position.set(Math.cos(a) * 2.48, Math.sin(a) * 2.48, 0.01);
+    rose.add(sp);
+  });
 
   // Needle: north half gold, south half dim
   const needle = new Group();
@@ -123,10 +159,9 @@ export function mountHero(canvas, opts = {}) {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    const s = w < 720 ? 0.68 : w < 1100 ? 0.85 : 1;
+    const s = w < 720 ? 0.82 : w < 1100 ? 1 : 1.12;
     scene.scale.setScalar(s);
-    // On wide screens the headline sits left, so park the rose on the right.
-    rig.position.x = w >= 1100 ? 2.6 : w >= 720 ? 1.2 : 0;
+    rig.position.x = 0; // the dial is the centrepiece, centred behind the headline
   }
   resize();
   window.addEventListener('resize', resize);
@@ -142,9 +177,10 @@ export function mountHero(canvas, opts = {}) {
     rig.rotation.y = mouse.x * 0.35 + Math.sin(t * 0.15) * 0.08;
     rig.rotation.x = -mouse.y * 0.25 + Math.cos(t * 0.12) * 0.05;
     rose.rotation.z = -scroll * 1.2;
-    rig.position.y = -scroll * 2.2 + (window.innerWidth >= 720 ? -0.15 : 0.35);
+    rig.position.y = -scroll * 2.2 + (window.innerWidth >= 720 ? -0.32 : 0.25);
     rig.scale.setScalar(1 - scroll * 0.25);
     outer.rotation.z += dt * 0.05;
+    bezel.rotation.z -= dt * 0.03;
     orbit1.rotation.z += dt * 0.12;
     orbit2.rotation.z -= dt * 0.09;
 
