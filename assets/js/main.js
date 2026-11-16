@@ -89,7 +89,7 @@
     entries.forEach((en) => {
       const v = en.target;
       if (en.isIntersecting) {
-        if (!(reduced || saveData)) { attachSources(v); if (!(v === hero && userPaused)) v.play().catch(() => {}); }
+        if (!(reduced || saveData)) { attachSources(v); if (!(v === hero && userPaused)) v.play().then(() => v.classList.add('is-playing')).catch(() => {}); }
       } else if (!v.paused) { v.pause(); }
     });
   }, { rootMargin: '200px 0px' });
@@ -187,6 +187,59 @@
       gsap.fromTo(v, { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: v.closest('.section'), start: 'top bottom', end: 'bottom top', scrub: true } });
     });
 
+
+    // 3D entrances scrubbed by scroll (cards unfold as they rise into view)
+    document.querySelectorAll('.reveal-3d').forEach((el, i) => {
+      gsap.fromTo(el, { opacity: 0, y: 70, rotateX: 16, transformPerspective: 1000, transformOrigin: '50% 100%' }, {
+        opacity: 1, y: 0, rotateX: 0, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 96%', end: 'top 62%', scrub: 0.6, onLeave() { el.classList.add('is-revealed'); } },
+      });
+    });
+
+    // Scroll-velocity skew on grids: the page leans into the scroll
+    const skewTargets = gsap.utils.toArray('.skew');
+    const skewTo = gsap.quickTo(skewTargets, 'skewY', { duration: 0.5, ease: 'power3' });
+    const clampSkew = gsap.utils.clamp(-5, 5);
+    ScrollTrigger.create({
+      onUpdate(self) { scrollVel = self.getVelocity(); skewTo(clampSkew(scrollVel / -350)); },
+    });
+    let idle; window.addEventListener('scroll', () => { clearTimeout(idle); idle = setTimeout(() => skewTo(0), 120); }, { passive: true });
+
+    // Word-by-word reveal scrubbed by scroll on lead copy
+    document.querySelectorAll('.scrub-words').forEach((el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach((n) => {
+        if (!n.textContent.trim()) return;
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach((part) => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = part; frag.appendChild(sp);
+        });
+        n.parentNode.replaceChild(frag, n);
+      });
+      gsap.to(el.querySelectorAll('.w'), { opacity: 1, stagger: 0.04, ease: 'none', scrollTrigger: { trigger: el, start: 'top 88%', end: 'top 45%', scrub: true } });
+    });
+
+    // Marquee driven by the ticker; it speeds up with scroll velocity
+    const track = document.querySelector('.marquee__track');
+    if (track) {
+      track.classList.add('js-marquee');
+      let mx = 0;
+      gsap.ticker.add(() => { mx -= 0.06 + Math.min(Math.abs(scrollVel) / 1500, 0.6); if (mx <= -50) mx += 50; gsap.set(track, { xPercent: mx }); });
+    }
+
+    // Section backgrounds breathe: scale down as the section scrolls through
+    document.querySelectorAll('.section__bg').forEach((bg) => {
+      gsap.fromTo(bg, { scale: 1.12 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: bg.closest('.section'), start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+
+    // Licence seal and founder card react to scroll
+    const seal = document.querySelector('.licence__seal');
+    if (seal) gsap.to(seal, { rotate: 180, ease: 'none', scrollTrigger: { trigger: seal, start: 'top bottom', end: 'bottom top', scrub: true } });
+    gsap.utils.toArray('.hero__chips li').forEach((li, i) => gsap.to(li, { y: -8 + (i % 2) * 16, repeat: -1, yoyo: true, duration: 2.6 + i * 0.3, ease: 'sine.inOut' }));
+
     // Counters
     document.querySelectorAll('[data-count]').forEach((el) => {
       const target = +el.dataset.count;
@@ -197,10 +250,65 @@
     });
   } else {
     // No GSAP or reduced motion: show everything.
-    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-revealed'));
+    document.querySelectorAll('.reveal, .reveal-3d').forEach((el) => el.classList.add('is-revealed'));
+    document.querySelectorAll('.scrub-words .w').forEach((el) => { el.style.opacity = 1; });
     document.querySelectorAll('.hero__title .word').forEach((el) => { el.style.transform = 'none'; });
     document.querySelectorAll('[data-count]').forEach((el) => { el.textContent = el.dataset.count; });
   }
+
+
+  /* ---------- Global particle field (2D canvas, scroll parallax, velocity streaks) ---------- */
+  const field = document.getElementById('field');
+  let scrollVel = 0; // px/s, updated by ScrollTrigger or a fallback
+  if (field && !reduced && !saveData) {
+    const ctx = field.getContext('2d');
+    const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    let W = 0, H = 0, P = [];
+    const N = isMobile ? 60 : 170;
+    function resizeField() {
+      W = window.innerWidth; H = window.innerHeight;
+      field.width = W * DPR; field.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      if (!P.length) for (let i = 0; i < N; i++) P.push({ x: Math.random() * W, y: Math.random() * H, z: 0.3 + Math.random() * 0.9, s: Math.random() * Math.PI * 2, g: Math.random() < 0.18 });
+    }
+    resizeField(); window.addEventListener('resize', resizeField);
+    let lastY = window.scrollY, t0 = performance.now();
+    function drawField(now) {
+      const dt = Math.min((now - t0) / 1000, 0.05); t0 = now;
+      const y = window.scrollY; const dy = y - lastY; lastY = y;
+      const v = Math.max(-60, Math.min(60, dy)); // per-frame scroll delta, clamped
+      ctx.clearRect(0, 0, W, H);
+      for (const p of P) {
+        p.y -= v * p.z * 0.35;               // parallax: nearer particles move more
+        p.x += Math.sin(now * 0.0004 + p.s) * 0.15 * p.z;
+        p.y -= 6 * dt * p.z;                 // slow upward drift
+        if (p.y < -20) { p.y = H + 20; p.x = Math.random() * W; }
+        if (p.y > H + 20) { p.y = -20; p.x = Math.random() * W; }
+        if (p.x < -20) p.x = W + 20; if (p.x > W + 20) p.x = -20;
+        const tw = 0.55 + 0.45 * Math.sin(now * 0.002 + p.s);
+        const len = Math.abs(v) * p.z * 0.35; // streak while scrolling fast
+        ctx.strokeStyle = p.g ? `rgba(212,166,69,${0.35 * tw})` : `rgba(200,214,240,${0.28 * tw})`;
+        ctx.lineWidth = p.z * 1.4;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x, p.y + Math.sign(v) * -len - 0.6); ctx.stroke();
+      }
+      if (!document.hidden) requestAnimationFrame(drawField); else setTimeout(() => requestAnimationFrame(drawField), 300);
+    }
+    requestAnimationFrame(drawField);
+  }
+
+  /* ---------- Scroll progress bar + compass dial ---------- */
+  const progress = document.getElementById('progress');
+  const dial = document.getElementById('scrollDial');
+  const pctEl = document.getElementById('scrollPct');
+  const scrollnav = document.getElementById('scrollnav');
+  function onProgress() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+    if (progress) progress.style.transform = `scaleX(${p})`;
+    if (dial) dial.style.transform = `rotate(${-p * 360}deg)`;
+    if (pctEl) pctEl.textContent = Math.round(p * 100) + '%';
+    if (scrollnav) scrollnav.classList.toggle('is-visible', window.scrollY > window.innerHeight * 0.6);
+  }
+  window.addEventListener('scroll', onProgress, { passive: true }); onProgress();
 
   /* ---------- Directions filter ---------- */
   const chips = document.querySelectorAll('.filters .chip');

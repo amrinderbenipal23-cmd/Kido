@@ -9,9 +9,9 @@ Static marketing site for a Haryana (India) PSARA-licensed private security agen
 | --- | --- |
 | `index.html` | Single-page site: hero, security bento, 13 directions, founder, compliance & licence, aptitude sample test, sectors, contact, footer |
 | `assets/css/styles.css` | Design tokens (navy + gold), layout, reduced-motion rules |
-| `assets/js/main.js` | Lenis smooth scroll, GSAP ScrollTrigger reveals, lazy background video, tilt cards, magnetic buttons, custom cursor, filters, counters, quiz, form |
+| `assets/js/main.js` | Lenis smooth scroll, GSAP ScrollTrigger 3D entrances scrubbed by scroll, scroll-velocity skew, word-by-word lead reveals, global particle field with parallax, compass scroll indicator and progress bar, lazy background video, tilt cards, magnetic buttons, custom cursor, filters, counters, quiz, form |
 | `src/hero3d.js` → `assets/js/hero3d.js` | Three.js compass rose + particle field over the hero video (built with esbuild, see below) |
-| `assets/video/*` | Six looping clips generated with Higgsfield (Seedance 2.5), crossfade-looped and encoded to WebM/MP4 at desktop and mobile sizes, with poster frames |
+| `assets/video/*` | Twenty-four looping clips generated with Higgsfield (Seedance 2.5): six section backgrounds, six security-service cards and one animated clip per direction card (image-to-video from the service renders). All crossfade-looped and encoded to WebM/MP4 at desktop and mobile sizes, with poster frames |
 | `assets/img/*` | Thirteen service-card renders and the social preview image, generated with Higgsfield (GPT Image 2.6), converted to WebP |
 | `assets/vendor/*` | Pinned GSAP 3.15.1, ScrollTrigger, Lenis 1.3.27 (self-hosted, no CDN dependency) |
 | `research_notes/`, `reports/` | Deep-research notes and the synthesized report behind the design, Higgsfield workflow and PSARA compliance copy |
@@ -50,8 +50,9 @@ The site has no build step at runtime.
 
 ## Regenerating motion assets with Higgsfield
 
-Clips were generated as 8-second, 1080p, 16:9, silent text-to-video with Seedance 2.5 and then made seamless with an
-ffmpeg crossfade (last second blended into the first). Encode recipe per clip:
+Section backgrounds were generated as 8-second, 1080p, 16:9 silent text-to-video with Seedance 2.5. Service and direction
+cards use 5-second 720p clips (the direction cards animate the existing service renders via image-to-video with the render as
+`start_image`). Every clip is made seamless with an ffmpeg crossfade (last second blended into the first). Encode recipe per clip:
 
 ```bash
 ffmpeg -i in.mp4 -filter_complex "[0:v]trim=1:8,setpts=PTS-STARTPTS[a];[0:v]trim=0:1,setpts=PTS-STARTPTS[b];[a][b]xfade=transition=fade:duration=1:offset=6[v]" -map "[v]" -an -c:v libx264 -crf 14 loop.mp4
